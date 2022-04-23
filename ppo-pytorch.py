@@ -12,8 +12,9 @@ import gym
 
 # Env setup
 
+
 def test_env():
-    env = gym.make('CartPole-v1')
+    env = gym.make("CartPole-v1")
     env.reset()
     for _ in range(10):
         # env.render()  - Does not work in jupyter?
@@ -22,10 +23,8 @@ def test_env():
     env.close()
 
 
-
-
-
 # %%
+
 
 def eval(env, model=None):
     terminal_steps = []
@@ -47,13 +46,11 @@ def eval(env, model=None):
 
 # %%
 
+
 def test_eval():
-    env = gym.make('CartPole-v1')
+    env = gym.make("CartPole-v1")
     eval(env)
     env.close()
-
-
-
 
 
 # %%
@@ -65,10 +62,7 @@ class ActorCritic(torch.nn.Module):
     def __init__(self, input_shape, output_shape, hidden_units, layers, discrete_actions=False):
         super().__init__()
         self.discrete_actions = discrete_actions
-        self.actor = nn.Sequential(
-            nn.Linear(input_shape, hidden_units),
-            nn.ReLU()
-        )
+        self.actor = nn.Sequential(nn.Linear(input_shape, hidden_units), nn.ReLU())
         for i in range(layers):
             self.actor.append(nn.Linear(hidden_units, hidden_units))
             self.actor.append(nn.ReLU())
@@ -121,37 +115,36 @@ class ActorCritic(torch.nn.Module):
 
 # Taken from cleanrl and ML-Collective
 config = {
-    'description': 'cleanrl',
-    'seed': 1,
-    'torch_deterministic': True,
-    'device': "cpu",
-    'std_init': 0.05,
-    'env_id': 'MountainCar-v0',
-    'num_workers': 8,  # rank (seed) / envs / N
-    'num_epochs': 10,  # K number of
-    'num_iterations': 30,  # number of times we collect a dataset or no. of update loops (300k-2mil total timesteps)
-    'max_timesteps': 2048,  # T
-    'epsilon': 0.2,  # clipping radius
-    'lr': 3e-4,
-    'gamma': 0.99,
-    'batch_size': 512,
-    'eval_actors': 4,  # not used
-    'clip_value_loss': True,
-    'gae': True,
-    'gae_lambda': 0.95,
-    'advantage_norm': True,
-    'max_grad_norm': 0.5
+    "description": "cleanrl",
+    "seed": 1,
+    "torch_deterministic": True,
+    "device": "cpu",
+    "std_init": 0.05,
+    "env_id": "MountainCar-v0",
+    "num_workers": 8,  # rank (seed) / envs / N
+    "num_epochs": 10,  # K number of
+    "num_iterations": 30,  # number of times we collect a dataset or no. of update loops (300k-2mil total timesteps)
+    "max_timesteps": 2048,  # T
+    "epsilon": 0.2,  # clipping radius
+    "lr": 3e-4,
+    "gamma": 0.99,
+    "batch_size": 512,
+    "eval_actors": 4,  # not used
+    "clip_value_loss": True,
+    "gae": True,
+    "gae_lambda": 0.95,
+    "advantage_norm": True,
+    "max_grad_norm": 0.5,
 }
 
 
 # %%
 
 # PPO
-class PPO():
-
+class PPO:
     def __init__(self, config):
         self.config = config
-        self.env = gym.make(config['env_id'])
+        self.env = gym.make(config["env_id"])
         if type(self.env.action_space) is gym.spaces.discrete.Discrete:
             pass
             self.action_space = self.env.action_space.n
@@ -160,7 +153,13 @@ class PPO():
             self.discrete_action = False
             self.action_space = self.env.action_space.shape[0]
         self.observation_space = self.env.observation_space.shape[0]
-        self.agent = ActorCritic(self.observation_space, self.action_space, hidden_units=128, layers=2, discrete_actions=self.discrete_action)
+        self.agent = ActorCritic(
+            self.observation_space,
+            self.action_space,
+            hidden_units=128,
+            layers=2,
+            discrete_actions=self.discrete_action,
+        )
         self.optimizer = optim.Adam(self.agent.parameters(), lr=config["lr"], eps=1e-5)
 
     def train(self):
@@ -219,7 +218,7 @@ class PPO():
             # This is ok, because we already calculated the advantages based on future states.
             b_obs = obs.reshape((-1,) + self.env.observation_space.shape)
             b_log_probs = logprobs.reshape(-1)
-            b_actions = actions.reshape((-1,) + (self.action_space, ))  # TODO: Handle continuous actions
+            b_actions = actions.reshape((-1,) + (self.action_space,))  # TODO: Handle continuous actions
             b_advantages = advantages.reshape(-1)
             # b_returns = returns.reshape(-1)  # TODO: What is this?
             b_values = values.reshape(-1)
